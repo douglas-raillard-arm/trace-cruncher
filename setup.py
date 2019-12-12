@@ -16,6 +16,14 @@ def main():
     traceevent_path = '/usr/local/lib/traceevent/'
     tracecmd_path = '/usr/local/lib/trace-cmd/'
 
+    cythonize('src/datawrapper.pyx')
+    module_data = Extension('tracecruncher.datawrapper',
+                            sources=['src/datawrapper.c'],
+                            library_dirs=[kshark_path, traceevent_path, tracecmd_path],
+                            runtime_library_dirs=[kshark_path, traceevent_path, tracecmd_path],
+                            libraries=['kshark', 'traceevent', 'tracecmd']
+                            )
+
     module_ks = Extension('tracecruncher.ksharkpy',
                           sources=['src/ksharkpy.c'],
                           library_dirs=[kshark_path],
@@ -42,7 +50,7 @@ def main():
           url='https://github.com/vmware/trace-cruncher',
           license='LGPL-2.1',
           packages=find_packages(),
-          ext_modules=[module_ks, module_ft],
+          ext_modules=[module_data, module_ks, module_ft],
           classifiers=[
               'Development Status :: 3 - Alpha',
               'Programming Language :: Python :: 3',
