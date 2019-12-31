@@ -7,7 +7,7 @@ Copyright 2019 VMware Inc, Yordan Karadzhov <ykaradzhov@vmware.com>
 """
 
 import sys
-import getopt
+import argparse
 
 from Cython.Distutils import build_ext
 from numpy.distutils.misc_util import Configuration
@@ -16,44 +16,23 @@ from numpy.distutils.core import setup
 def lib_dirs(argv):
     """ Function used to retrieve the library paths.
     """
-    kslibdir = ''
-    evlibdir = ''
-    trlibdir = ''
 
-    try:
-        opts, args = getopt.getopt(
-            argv, 'k:t:e:', ['kslibdir=',
-                             'trlibdir=',
-                             'evlibdir='])
+    parser = argparse.ArgumentParser(
+        description='Retrieve the library paths',
+        allow_abbrev=False,
+    )
+    parser.add_argument('-k', '--kslibdir',
+        default='/usr/local/lib/kernelshark'
+    )
+    parser.add_argument('-t', '--trlibdir',
+        default='/usr/local/lib/traceevent'
+    )
+    parser.add_argument('-e', '--evlibdir',
+        default='/usr/local/lib/trace-cmd'
+    )
 
-    except getopt.GetoptError:
-        sys.exit(2)
-
-    for opt, arg in opts:
-        if opt in ('-k', '--kslibdir'):
-            kslibdir = arg
-        elif opt in ('-t', '--trlibdir'):
-            trlibdir = arg
-        elif opt in ('-e', '--evlibdir'):
-            evlibdir = arg
-
-    cmd1 = 1
-    for i in range(len(sys.argv)):
-        if sys.argv[i] == 'build_ext':
-            cmd1 = i
-
-    sys.argv = sys.argv[:1] + sys.argv[cmd1:]
-
-    if kslibdir == '':
-        kslibdir = '/usr/local/lib/kernelshark'
-
-    if evlibdir == '':
-        evlibdir = '/usr/local/lib/traceevent'
-
-    if trlibdir == '':
-        trlibdir = '/usr/local/lib/trace-cmd/'
-
-    return [kslibdir, evlibdir, trlibdir]
+    args, other_args = parser.parse_known_args(argv)
+    return (args.kslibdir, args.evlibdir, args.trlibdir), other_args
 
 
 def configuration(parent_package='',
@@ -76,12 +55,14 @@ def configuration(parent_package='',
 
 def main(argv):
     # Retrieve third-party libraries.
-    libdirs = lib_dirs(sys.argv[1:])
+    libdirs, other_args = lib_dirs(sys.argv[1:])
 
     # Retrieve the parameters of the configuration.
     params = configuration(libdirs=libdirs).todict()
     params['cmdclass'] = dict(build_ext=build_ext)
 
+    other_args = [sys.argv[0]] + other_args
+    sys.argv = other_args
     ## Building the extension.
     setup(**params)
 
