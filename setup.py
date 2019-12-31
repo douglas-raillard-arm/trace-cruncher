@@ -10,6 +10,16 @@ Copyright 2019 VMware Inc, Yordan Karadzhov (VMware) <y.karadz@gmail.com>
 from setuptools import setup, find_packages
 from distutils.core import Extension
 from Cython.Build import cythonize
+from Cython.Distutils import build_ext
+
+class NumpyBuildExtCommand(build_ext):
+    """build_ext command for use when numpy headers are needed."""
+    def run(self):
+        # Import numpy once we know it has been installed
+        import numpy
+        self.include_dirs.append(numpy.get_include())
+        return super().run()
+
 
 def main():
     kshark_path = '/usr/local/lib/kernelshark'
@@ -50,12 +60,19 @@ def main():
           url='https://github.com/vmware/trace-cruncher',
           license='LGPL-2.1',
           packages=find_packages(),
+          install_requires=[
+              'cython',
+              'numpy',
+              'matplotlib',
+          ],
           ext_modules=[module_data, module_ks, module_ft],
           classifiers=[
               'Development Status :: 3 - Alpha',
               'Programming Language :: Python :: 3',
-              ]
+          ],
+          cmdclass = {'build_ext': NumpyBuildExtCommand},
           )
+
 
 if __name__ == '__main__':
     main()
