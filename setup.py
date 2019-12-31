@@ -6,6 +6,7 @@ SPDX-License-Identifier: LGPL-2.1
 Copyright 2019 VMware Inc, Yordan Karadzhov (VMware) <y.karadz@gmail.com>
 """
 
+import os
 
 from setuptools import setup, find_packages
 from distutils.core import Extension
@@ -20,6 +21,8 @@ class NumpyBuildExtCommand(build_ext):
         self.include_dirs.append(numpy.get_include())
         return super().run()
 
+def make_path_literal(*components):
+    return "{}".format(os.path.join(*components))
 
 def main():
     kshark_path = '/usr/local/lib/kernelshark'
@@ -40,8 +43,8 @@ def main():
                           runtime_library_dirs=[kshark_path],
                           libraries=['kshark'],
                           define_macros=[
-                              ('LIB_KSHARK_PATH', '\"' + kshark_path + '/libkshark.so\"'),
-                              ('KS_PLUGIN_DIR',   '\"' + kshark_path + '/plugins\"')
+                              ('LIB_KSHARK_PATH', make_path_literal(kshark_path, 'libshark.so')),
+                              ('KS_PLUGIN_DIR', make_path_literal(kshark_path, 'plugins')),
                               ],
                           )
 

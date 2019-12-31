@@ -8,6 +8,7 @@ Copyright 2019 VMware Inc, Yordan Karadzhov <ykaradzhov@vmware.com>
 
 import sys
 import argparse
+import os
 
 from Cython.Distutils import build_ext
 from numpy.distutils.misc_util import Configuration
@@ -45,7 +46,7 @@ def configuration(parent_package='',
     config.add_extension('ksharkpy',
                          sources=['libkshark_wrapper.pyx'],
                          libraries=libs,
-                         define_macros=[('KS_PLUGIN_DIR','\"' + libdirs[0] + '/plugins\"')],
+                         define_macros=[('KS_PLUGIN_DIR','"{}"'.format(os.path.join(libdirs[0], 'plugins')))],
                          library_dirs=libdirs,
                          depends=['libkshark-py.c'],
                          include_dirs=libdirs)
